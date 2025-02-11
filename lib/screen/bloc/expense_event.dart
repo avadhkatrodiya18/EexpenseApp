@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:expense/model/expense_model.dart';
 
-abstract class ExpenseEvent extends Equatable {
+abstract class ExpenseEvent {
   @override
   List<Object> get props => [];
 }

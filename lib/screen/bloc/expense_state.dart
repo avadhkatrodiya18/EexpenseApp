@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:expense/model/expense_model.dart';
 
-abstract class ExpenseState extends Equatable {
+abstract class ExpenseState {
   @override
   List<Object> get props => [];
 }

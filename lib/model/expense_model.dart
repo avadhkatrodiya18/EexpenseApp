@@ -31,3 +31,4 @@ class ExpenseModel extends HiveObject with EquatableMixin {
   @override
   List<Object> get props => [id, category, amount, paymentMethod, timestamp];
 }
+
