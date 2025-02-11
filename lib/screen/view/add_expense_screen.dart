@@ -1,18 +1,21 @@
-import 'package:expense/model/expense_model.dart';
-import 'package:expense/screen/bloc/expense_bloc.dart';
-import 'package:expense/screen/bloc/expense_event.dart';
-import 'package:expense/screen/view/home_Screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:expense/model/expense_model.dart';
+import 'package:expense/screen/bloc/expense_bloc.dart';
+import 'package:expense/screen/bloc/expense_event.dart';
 
 class AddExpenseScreen extends StatefulWidget {
+  final ExpenseModel? expense;
+
+  const AddExpenseScreen({super.key, this.expense});
+
   @override
-  _AddExpenseScreenState createState() => _AddExpenseScreenState();
+  AddExpenseScreenState createState() => AddExpenseScreenState();
 }
 
-class _AddExpenseScreenState extends State<AddExpenseScreen> {
+class AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _amountController = TextEditingController();
   String selectedCategory = "Food";
@@ -21,19 +24,31 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final List<String> _categories = ["Food", "Transport", "Shopping", "Bills"];
   final List<String> _paymentMethods = ["Cash", "Credit Card", "Debit Card", "UPI"];
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.expense != null) {
+      _amountController.text = widget.expense!.amount.toString();
+      selectedCategory = widget.expense!.category;
+      selectedPaymentMethod = widget.expense!.paymentMethod;
+    }
+  }
+
   void saveExpense() {
     if (_formKey.currentState!.validate()) {
       final newExpense = ExpenseModel(
-        id: const Uuid().v4(),
+        id: widget.expense?.id ?? const Uuid().v4(),
         category: selectedCategory,
         amount: double.parse(_amountController.text),
         paymentMethod: selectedPaymentMethod,
-        timestamp: DateTime.now(),
+        timestamp: widget.expense?.timestamp ?? DateTime.now(),
       );
 
-      print("Dispatching AddExpense event: $newExpense"); // 🔥 Debug print
-
-      context.read<ExpenseBloc>().add(AddExpense(newExpense));
+      if (widget.expense == null) {
+        context.read<ExpenseBloc>().add(AddExpense(newExpense));
+      } else {
+        context.read<ExpenseBloc>().add(UpdateExpense(newExpense));
+      }
 
       Navigator.pop(context);
     }
@@ -42,7 +57,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Expense")),
+      appBar: AppBar(title: Text(widget.expense == null ? "Add Expense" : "Edit Expense")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -78,7 +93,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: saveExpense,
-                child: const Text("Save Expense"),
+                child: Text(widget.expense == null ? "Save Expense" : "Update Expense"),
               ),
             ],
           ),

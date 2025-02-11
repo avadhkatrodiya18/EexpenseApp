@@ -1,6 +1,5 @@
 import 'package:expense/model/expense_model.dart';
 import 'package:expense/screen/bloc/expense_bloc.dart';
-import 'package:expense/screen/bloc/expense_event.dart';
 import 'package:expense/screen/view/home_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,7 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ExpenseBloc(expenseBox), // ✅ Ensuring Bloc is registered
+      create: (context) => ExpenseBloc(expenseBox),
       child: MaterialApp(
         title: 'Expense Tracker',
         theme: ThemeData(

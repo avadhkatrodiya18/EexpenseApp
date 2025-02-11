@@ -7,11 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   String? _selectedCategory;
   String? _selectedPaymentMethod;
 
@@ -20,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     final bloc = context.read<ExpenseBloc>();
-    print("ExpenseBloc exists: $bloc"); // 🔥 Debug print
 
     bloc.add(LoadExpenses());
   }
@@ -69,12 +70,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: BlocBuilder<ExpenseBloc, ExpenseState>(
 
             builder: (context, state) {
-              print("state===> $state I===> ${state is ExpenseLoaded}");
               if (state is ExpenseLoaded) {
-                print("🖥️ UI Updated with ${state.expenses.length} expenses");
 
                 List<ExpenseModel> filteredExpenses = state.expenses;
-                print("state.expenses==> ${state.expenses.length}");
 
                 if (_selectedCategory != null && _selectedCategory != "All") {
                   filteredExpenses = filteredExpenses
@@ -96,7 +94,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     return ListTile(
                       title: Text(expense.category),
                       subtitle: Text("\$${expense.amount.toStringAsFixed(2)}"),
-                      trailing: Text(expense.paymentMethod),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(expense.paymentMethod),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              context.read<ExpenseBloc>().add(DeleteExpense(expense.id));
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddExpenseScreen(expense: expense),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -114,11 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(builder: (context) => AddExpenseScreen()),
           );
-
-          // if (context.mounted) {
-          //   print("🔄 Reloading expenses after returning...");
-          //   context.read<ExpenseBloc>().add(LoadExpenses()); // 🔥 Reload
-          // }
         },
         child: const Icon(Icons.add),
       ),
