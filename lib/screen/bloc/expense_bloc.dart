@@ -6,33 +6,49 @@ import 'package:hive/hive.dart';
 
 class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
   final Box<ExpenseModel> expenseBox;
+  double monthlyBudget = 0.0;
+  double totalExpenses = 0.0;
 
   ExpenseBloc(this.expenseBox) : super(ExpenseLoading()) {
     on<LoadExpenses>((event, emit) {
       final expenses = expenseBox.values.toList();
-      emit(ExpenseLoaded(expenses));
+      totalExpenses = _calculateTotalExpenses(expenses);
+      emit(ExpenseLoaded(expenses, totalExpenses: totalExpenses));
     });
 
     on<AddExpense>((event, emit) async {
-    await expenseBox.put(
-          event.expense.id, event.expense);
+      await expenseBox.put(event.expense.id, event.expense);
       await expenseBox.flush();
 
       final updatedExpenses = List<ExpenseModel>.from(expenseBox.values.toList());
+      totalExpenses = _calculateTotalExpenses(updatedExpenses);
 
-      emit(ExpenseLoaded(updatedExpenses));
-
-      add(LoadExpenses());
+      emit(ExpenseLoaded(updatedExpenses, totalExpenses: totalExpenses));
     });
 
     on<UpdateExpense>((event, emit) {
       expenseBox.put(event.expense.id, event.expense);
-      emit(ExpenseLoaded(expenseBox.values.toList()));
+      final updatedExpenses = List<ExpenseModel>.from(expenseBox.values.toList());
+      totalExpenses = _calculateTotalExpenses(updatedExpenses);
+
+      emit(ExpenseLoaded(updatedExpenses, totalExpenses: totalExpenses));
     });
 
     on<DeleteExpense>((event, emit) {
       expenseBox.delete(event.id);
-      emit(ExpenseLoaded(expenseBox.values.toList()));
+      final updatedExpenses = List<ExpenseModel>.from(expenseBox.values.toList());
+      totalExpenses = _calculateTotalExpenses(updatedExpenses);
+
+      emit(ExpenseLoaded(updatedExpenses, totalExpenses: totalExpenses));
     });
+
+    on<SetBudget>((event, emit) {
+      monthlyBudget = event.budget;
+      emit(BudgetUpdated(monthlyBudget));
+    });
+  }
+
+  double _calculateTotalExpenses(List<ExpenseModel> expenses) {
+    return expenses.fold(0.0, (sum, item) => sum + item.amount);
   }
 }

@@ -22,3 +22,7 @@ class DeleteExpense extends ExpenseEvent {
   final String id;
   DeleteExpense(this.id);
 }
+class SetBudget extends ExpenseEvent {
+  final double budget;
+  SetBudget(this.budget);
+}
